@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 	"os"
+	"path/filepath"
 
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
@@ -27,7 +28,7 @@ import (
 
 const logFile = "./log.xlsx"
 const sheetPath = "./modelo_importacao_lote.xlsx"
-const driverPath = "./chromedriver/chromedriver.exe"
+const driverPath = "./chromedriver/chromedriver"
 const sheetName = "Solicitação"
 const whatsappURL = "https://web.whatsapp.com"
 const sideElementWhats = "//*[@id='side']"
@@ -234,12 +235,49 @@ func EnterKey(browser selenium.WebDriver) {
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}
-
-	time.Sleep(2 * time.Second)
-
 	fmt.Println("Enter Key binding")
 	enter.SendKeys(string('\ue007'))
 	fmt.Println("KeyDown Enter finished")
+
+	anexar, err := browser.FindElement(selenium.ByXPATH, "//*[@id='main']/footer/div[1]/div/span[2]/div/div[1]/div[2]/div/div")
+	if err != nil {
+		fmt.Println(err)
+	}
+	anexar.Click()
+	fmt.Println("input file")
+
+	attach, err := browser.FindElement(selenium.ByCSSSelector, "#main > footer > div._2lSWV._3cjY2.copyable-area > div > span:nth-child(2) > div > div._2xy_p._1bAtO > div._1OT67 > div > span > div > ul > div > div:nth-child(2) > li > div > input[type=file]")
+	if err != nil {
+		fmt.Println(err)
+	}
+	
+	time.Sleep(2*time.Second)
+	attach.Click()
+	time.Sleep(2 * time.Second)
+	absPath, err := filepath.Abs("./foto.jpeg")
+  if err != nil {
+    panic(err)
+  }
+	if err = browser.Wait(selenium.Condition(func (driver selenium.WebDriver) (bool, error){
+		_, err := driver.FindElement(selenium.ByXPATH, "//*[@id='app']/div/div/div[3]/div[2]/span/div/span/div/div/div[2]/div/div[2]/div[2]/div/div")
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	})); err != nil {
+		fmt.Println(err)
+	}
+	attach.SendKeys(absPath)
+	time.Sleep(2 * time.Second)
+	sendImage, err := browser.FindElement(selenium.ByXPATH, "//*[@id='app']/div/div/div[3]/div[2]/span/div/span/div/div/div[2]/div/div[2]/div[2]/div/div")
+	if err != nil {
+		fmt.Println(err)
+	}
+	time.Sleep(2 * time.Second)
+	sendImage.SendKeys(string('\ue007'))
+	time.Sleep(2*time.Second)
+	fmt.Println("input file work")
+	
 }
 
 func CloseWhats(browser selenium.WebDriver) {
